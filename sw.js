@@ -3,7 +3,7 @@
 // only ever touches caches whose names start with its own prefix.
 
 const PREFIX = 'tile-and-error-';
-const CACHE = `${PREFIX}v1.0.0`;
+const CACHE = `${PREFIX}v1.0.1`;
 const FILES = [
   './',
   'index.html',
@@ -38,10 +38,25 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Serve from the cache straight away, and refresh the cached copy in the background.
+// The page itself and the app settings (manifest) come from the network when it is available,
+// so Chrome always sees the current version; the saved copy is used only when offline.
+// Everything else is served from the saved copy straight away and refreshed in the background.
 self.addEventListener('fetch', event => {
   const req = event.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== location.origin) return;
+  if (req.mode === 'navigate' || url.pathname.endsWith('.webmanifest')) {
+    event.respondWith(
+      fetch(req).then(res => {
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(req.mode === 'navigate' ? 'index.html' : req, copy));
+        }
+        return res;
+      }).catch(async () => (await caches.match(req, { ignoreSearch: true })) || caches.match('index.html')),
+    );
+    return;
+  }
   event.respondWith(
     caches.open(CACHE).then(async cache => {
       const cached = await cache.match(req, { ignoreSearch: true });

@@ -1,7 +1,7 @@
 {
-  "id": "/Mahjong/",
-  "name": "Tile & Error",
-  "short_name": "Tile & Error",
+  "id": "/Mahjong/tile-and-error",
+  "name": "Tile and Error",
+  "short_name": "Tile and Error",
   "description": "An advert-free Mahjong solitaire game.",
   "start_url": "/Mahjong/",
   "scope": "/Mahjong/",

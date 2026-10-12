@@ -6,7 +6,7 @@ import { sameGroup } from './rules.js';
 import { newGame, tapTile, freeIds, undoMove, canUndo, findHint, shuffleBoard, hammer, carryOn, carryOnCost, TRAY_SIZE } from './game.js';
 import { newProfile, recordResult, recordPlayDay, currentStreak, applyPrize, levelsToNextPrize, winRate, HELPS, HELP_NAMES } from './progress.js';
 
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const $ = id => document.getElementById(id);
 
 let profile = null;
@@ -502,7 +502,15 @@ async function init() {
     trayFull();
   }
   store.persist().catch(() => {});
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    // When an updated version takes over, reload once so the new files (and app settings) are used.
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController && !reloaded) { reloaded = true; saveAll().finally(() => location.reload()); }
+    });
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 }
 
 init();

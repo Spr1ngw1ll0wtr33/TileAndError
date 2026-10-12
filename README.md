@@ -5,8 +5,10 @@ An advert-free Mahjong solitaire game for my own phone and tablet. It has a 4-sl
 It is a web app (a "PWA"). It is published with GitHub Pages and installed from Chrome, just like Garden Diary, Memory Jar and Boundaries.
 
 - **Web address:** https://spr1ngw1ll0wtr33.github.io/Mahjong/
-- **Name on the phone:** Tile & Error
-- **Manifest Id:** `/Mahjong/` (its own identity, so it can't clash with the other apps)
+- **Name on the phone:** Tile and Error. The title inside the game is "Tile & Error".
+- **Manifest Id:** `/Mahjong/tile-and-error` (its own identity, so it can't clash with the other apps)
+
+The installed name avoids "&". The first version used it, and on 12/10/2026 Chrome said the app was "already installed" but could not open it. The "&" is the main suspect, since Android's app-building tools are known to trip over it. The identity was changed from `/Mahjong/` at the same time, so that Chrome treats this version as a new app.
 
 ---
 
@@ -25,13 +27,13 @@ It is a web app (a "PWA"). It is published with GitHub Pages and installed from 
 2. Wait for the home screen with the arch to appear.
 3. Tap **⋮** (three dots, top right).
 4. Tap **Install** (sometimes **Add to Home screen → Install**). Do **not** choose "Create shortcut", because shortcuts don't show in O'launcher.
-5. **Tile & Error** now appears in O'launcher. Open it from there.
+5. **Tile and Error** now appears in O'launcher. Open it from there.
 
-To check it installed properly, type `chrome://webapks` into Chrome's address bar. Look for Tile & Error and check that **Manifest Id** ends in `/Mahjong/`.
+To check it installed properly, type `chrome://webapks` into Chrome's address bar. Look for Tile and Error and check that **Manifest Id** ends in `/Mahjong/tile-and-error`.
 
 ## 3. Updates
 
-When a new version is published, open the app twice. The first time it fetches the update quietly in the background, and the second time it uses it.
+When a new version is published, it is picked up the next time you open the app with an internet connection. The app may reload itself once as it switches over.
 
 If something ever looks stuck, clear only **"Cached images and files"** in Chrome. **Never clear "Cookies and site data"** for this web address: that would wipe every app at spr1ngw1ll0wtr33.github.io at once, including your Garden Diary and Memory Jar entries.
 
@@ -77,7 +79,8 @@ You start with one of each.
 - Plain HTML, CSS and JavaScript, with no build step. Open `index.html` through any web server, at the path `/Mahjong/`.
 - Tests: `npm test` (Node 18 or later). They check that 500 generated levels can all be cleared without the tray filling, as well as the tray, Carry on, hammer, shuffle, prizes and streaks.
 - **Shared address rules** (all of these apps live at spr1ngw1ll0wtr33.github.io):
-  - The manifest `id`, `scope` and `start_url` are all `/Mahjong/`.
+  - The manifest `id` is `/Mahjong/tile-and-error`; `scope` and `start_url` are `/Mahjong/`.
+  - Keep the manifest `name` free of "&" and other symbols.
   - Service worker caches start with `tile-and-error-`, and only those are ever deleted.
   - The IndexedDB database is called `tile-and-error`.
 - When releasing a change, bump `CACHE` in `sw.js` and `VERSION` in `js/app.js`.
