@@ -20,6 +20,19 @@ other apps: My Bin, Memory Jar, Garden Diary and Boundaries. Read the README fir
 5. **To show which version the phone has**, the home screen shows the version number in small print.
    When releasing a change, bump `VERSION` in `js/app.js` and `CACHE` in `sw.js` together.
 
+6. **Install diagnosis:** Settings → "Installing the app" shows whether Chrome offered the direct install
+   route (`beforeinstallprompt`), plus the version, address, Chrome and Android versions. Ask for one
+   screenshot of that section instead of sending Kathryn round menu checks.
+
+## Design decisions (13/10/2026)
+- Tiles follow Kathryn's reference game (a modern picture-tile game), not traditional Mahjong: one main
+  symbol per tile (numbers, simple Chinese characters, patterns, pictures in themes), and a tile
+  matches only an identical tile. She finds subtle Chinese writing hard to tell apart, so keep
+  characters few and visually distinct.
+- Game screen: Forest green table, ivory tiles, tray at the top with tile-sized slots, square
+  symbol-only help buttons. Board sizes are capped at 6 tiles across and 7 down so tiles are large.
+- Soft colours, not bright ones. Two schemes are available in Settings.
+
 ## Working with Kathryn
 - She is not a developer. Give plain-English, numbered, step-by-step instructions, and avoid jargon:
   say "the panel that pops up", not "dialog".
