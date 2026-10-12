@@ -1,12 +1,12 @@
 // Screens, drawing and touch handling for Tile & Error.
 
 import * as store from './store.js';
-import { faceSVG, faceName } from './tiles.js';
+import { faceSVG, faceName, isFace } from './tiles.js';
 import { sameGroup } from './rules.js';
 import { newGame, tapTile, freeIds, undoMove, canUndo, findHint, shuffleBoard, hammer, carryOn, carryOnCost, TRAY_SIZE } from './game.js';
 import { newProfile, recordResult, recordPlayDay, currentStreak, applyPrize, levelsToNextPrize, winRate, HELPS, HELP_NAMES } from './progress.js';
 
-const VERSION = '1.0.3';
+const VERSION = '1.1.0';
 const $ = id => document.getElementById(id);
 
 let profile = null;
@@ -67,7 +67,8 @@ function show(view) {
   if (view === 'home') renderHome();
   if (view === 'progress') renderProgress();
   if (view === 'settings') renderSettings();
-  if (view === 'game') requestAnimationFrame(layoutBoard);
+  if (view === 'game') requestAnimationFrame(layoutAll);
+  document.querySelector('meta[name=theme-color]').content = view === 'game' ? '#3E4A30' : '#E9E0CC';
   window.scrollTo(0, 0);
 }
 
@@ -84,7 +85,7 @@ function renderHome() {
   const streak = currentStreak(profile);
   $('homeFoot').textContent = streak ? `${plural(streak, 'day')} in a row` : '';
   $('homeVersion').textContent = `Version ${VERSION}`;
-  $('homeMotif').innerHTML = `<div class="tile">${faceSVG('drR')}</div>`;
+  $('homeMotif').innerHTML = `<div class="tile">${faceSVG('dragon', profile.settings.palette)}</div>`;
 }
 
 $('playBtn').addEventListener('click', () => {
@@ -118,7 +119,6 @@ function buildBoard() {
 }
 
 function layoutBoard() {
-  if (!game || $('game').hidden) return;
   const wrap = $('boardWrap');
   const W = wrap.clientWidth, H = wrap.clientHeight;
   const cols = (Math.max(...game.tiles.map(t => t.x)) + 2) / 2;
@@ -126,8 +126,8 @@ function layoutBoard() {
   const maxZ = Math.max(...game.tiles.map(t => t.z));
   const depth = 0.09; // how far each layer shifts, as a share of tile width
   const pad = 10;
-  const tw = Math.min(96, (W - pad) / (cols + maxZ * depth), (H - pad) / (rows * 4 / 3 + maxZ * depth));
-  const th = tw * 4 / 3;
+  const tw = Math.min(100, (W - pad) / (cols + maxZ * depth), (H - pad) / (rows * RATIO + maxZ * depth));
+  const th = tw * RATIO;
   const dz = tw * depth;
   const board = $('board');
   board.style.width = `${cols * tw + maxZ * dz}px`;
@@ -139,20 +139,21 @@ function layoutBoard() {
     el.style.width = `${tw - 1}px`;
     el.style.height = `${th - 1}px`;
   }
+  return tw;
 }
-window.addEventListener('resize', () => requestAnimationFrame(layoutBoard));
+window.addEventListener('resize', () => requestAnimationFrame(layoutAll));
 
 function render() {
   const free = freeIds(game);
   const inTray = new Set(game.tray);
-  const showIndex = profile.settings.cornerIndex;
+  const palette = profile.settings.palette;
   $('board').classList.toggle('dim', profile.settings.dimBlocked);
   $('board').classList.toggle('armed', hammerArmed);
   for (const t of game.tiles) {
     const el = tileEls.get(t.id);
-    const faceKey = `${t.face}|${showIndex}`;
+    const faceKey = `${t.face}|${palette}`;
     if (el.dataset.face !== faceKey) {
-      el.innerHTML = faceSVG(t.face, showIndex);
+      el.innerHTML = faceSVG(t.face, palette);
       el.dataset.face = faceKey;
       el.setAttribute('aria-label', faceName(t.face));
     }
@@ -166,7 +167,7 @@ function render() {
   for (let i = 0; i < TRAY_SIZE; i++) {
     const id = game.tray[i];
     slots[i].classList.toggle('filled', id !== undefined);
-    slots[i].innerHTML = id !== undefined ? `<div class="tile">${faceSVG(game.tiles[id].face, showIndex)}</div>` : '';
+    slots[i].innerHTML = id !== undefined ? `<div class="tile">${faceSVG(game.tiles[id].face, palette)}</div>` : '';
   }
   // Helps
   for (const b of document.querySelectorAll('.help')) {
@@ -228,6 +229,19 @@ async function play(id, el) {
 }
 
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+const RATIO = 1.2; // tile height ÷ width, as in the reference game
+
+/** Size the board, then size the tray slots to match the tiles, and size the board again. */
+function layoutAll() {
+  if (!game || $('game').hidden) return;
+  for (let pass = 0; pass < 3; pass++) {
+    const tw = layoutBoard();
+    const slotW = Math.max(40, Math.min(tw, ($('game').clientWidth - 72) / 4));
+    $('game').style.setProperty('--tw', `${slotW}px`);
+    $('game').style.setProperty('--th', `${slotW * RATIO}px`);
+  }
+}
+
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 function afterMove() {
@@ -477,11 +491,14 @@ $('restoreFile').addEventListener('change', async e => {
 
 function renderSettings() {
   $('setDim').checked = profile.settings.dimBlocked;
-  $('setIndex').checked = profile.settings.cornerIndex;
+  $('palPaper').checked = profile.settings.palette !== 'soft';
+  $('palSoft').checked = profile.settings.palette === 'soft';
   $('version').textContent = `Tile & Error · version ${VERSION}`;
 }
 $('setDim').addEventListener('change', e => { profile.settings.dimBlocked = e.target.checked; saveAll(); });
-$('setIndex').addEventListener('change', e => { profile.settings.cornerIndex = e.target.checked; saveAll(); });
+for (const id of ['palPaper', 'palSoft']) {
+  $(id).addEventListener('change', e => { if (e.target.checked) { profile.settings.palette = e.target.value; saveAll(); } });
+}
 
 // ---------- start up ----------
 
@@ -490,6 +507,8 @@ async function load() {
   profile.settings = { ...newProfile().settings, ...profile.settings };
   game = (await store.get('current')) || null;
   if (game && game.level !== profile.level) game = null;
+  // Games saved by an earlier version used different tiles; start those levels afresh.
+  if (game && game.tiles.some(t => !isFace(t.face))) game = null;
   // A game saved mid-dialogue resumes in the right state.
   await store.set('profile', profile);
 }

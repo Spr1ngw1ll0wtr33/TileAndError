@@ -3,8 +3,9 @@
 @font-face { font-family: 'Poiret One'; src: url(../fonts/poiret-one-latin-400-normal.woff2) format('woff2'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'Josefin Sans'; src: url(../fonts/josefin-sans-latin-400-normal.woff2) format('woff2'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'Josefin Sans'; src: url(../fonts/josefin-sans-latin-600-normal.woff2) format('woff2'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Josefin Sans'; src: url(../fonts/josefin-sans-latin-700-normal.woff2) format('woff2'); font-weight: 700; font-display: swap; }
 @font-face { font-family: 'Josefin Sans'; src: url(../fonts/josefin-sans-latin-300-italic.woff2) format('woff2'); font-weight: 300; font-style: italic; font-display: swap; }
-@font-face { font-family: 'TileCJK'; src: url(../fonts/noto-serif-sc-tiles.woff2) format('woff2'); font-weight: 600; font-display: block; }
+@font-face { font-family: 'TileCJK'; src: url(../fonts/noto-serif-sc-tiles.woff2) format('woff2'); font-weight: 700; font-display: block; }
 
 :root {
   --linen: #EFE7D6;
@@ -17,6 +18,7 @@
   --forest: #3E4A30;
   --ink: #2E3322;
   --crimson: #6E2A30;
+  --terracotta: #B9653A;
   --accent: var(--crimson);
   --shadow: rgba(40, 34, 20, .26);
   --u: min(1vw, 1vh * .6, 6px);
@@ -96,11 +98,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .steparch .rule2 { margin: 18px auto; color: var(--olive); }
 #home h1 { font-size: clamp(44px, 13vw, 72px); }
 .home-motif { width: 64px; margin-bottom: 22px; }
-.home-motif .tile { position: relative; width: 64px; height: 85px; }
+.home-motif .tile { position: relative; width: 64px; height: 77px; }
 .home-actions { width: 100%; display: grid; gap: 14px; }
 .home-foot { text-align: center; color: var(--olive); font-size: 12px; }
 
-/* Game */
+/* Game: ivory tiles on a Forest green table, so they stand out clearly. */
+#game { background: var(--forest); color: var(--linen); --tw: 52px; --th: 62px; }
+#game .topbar { padding: 10px 0 4px; }
+#game .numerals { color: var(--linen); }
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 0 6px; gap: 10px; }
 .board-wrap { flex: 1; position: relative; min-height: 0; }
 .board { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
@@ -109,51 +114,54 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .tile {
   position: absolute;
   background: var(--linen);
-  border-radius: 12% / 9%;
-  box-shadow: 1.5px 2.5px 0 var(--sand), 2.5px 4px 0 var(--khaki), 3px 6px 8px var(--shadow);
+  border-radius: 12% / 10%;
+  box-shadow: 1.5px 2.5px 0 var(--sand), 3px 4.5px 0 var(--khaki), 4px 7px 9px rgba(20, 24, 14, .45);
   transition: opacity .15s;
 }
-.tile svg { position: absolute; inset: 4% 5%; width: 90%; height: 92%; }
-.tile.blocked { background: var(--parchment); }
-.dim .tile.blocked svg { opacity: .55; }
-.dim .tile.blocked { background: var(--parchment); }
-.board:not(.dim) .tile.blocked { background: var(--linen); }
+.tile svg { position: absolute; inset: 6%; width: 88%; height: 88%; }
+.dim .tile.blocked { background: #E3D9C4; }
+.dim .tile.blocked svg { opacity: .78; }
 .tile.gone { display: none; }
-.tile.hint { box-shadow: 0 0 0 3px var(--accent), 2.5px 4px 0 var(--khaki), 3px 6px 8px var(--shadow); animation: pulse 0.8s ease-in-out 3; }
+.tile.hint { box-shadow: 0 0 0 3px var(--terracotta), 3px 4.5px 0 var(--khaki), 4px 7px 9px rgba(20, 24, 14, .45); animation: pulse 0.8s ease-in-out 3; }
 .tile.nudge { animation: nudge .25s; }
 @keyframes pulse { 50% { transform: translateY(-3px); } }
 @keyframes nudge { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 .flying { position: fixed; z-index: 50; pointer-events: none; transition: left .17s ease-out, top .17s ease-out, width .17s, height .17s, opacity .15s, transform .15s; }
 
-.side { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; }
-.tray { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; background: var(--parchment); border-radius: 12px; box-shadow: inset 3px 4px 9px var(--shadow); max-width: 340px; width: 100%; margin: 0 auto; }
-.slot { aspect-ratio: 3 / 4; border-radius: 10% / 8%; background: var(--sand); opacity: .55; position: relative; }
-.slot.filled { opacity: 1; background: none; }
+/* Tray: four slots the size of a board tile, set into a darker recess. */
+.tray { display: flex; gap: 8px; padding: 8px; margin: 2px auto 0; background: var(--ink); border-radius: 12px; box-shadow: inset 2px 3px 8px rgba(0, 0, 0, .45); }
+.slot { width: var(--tw); height: var(--th); border-radius: 12% / 10%; background: var(--olive); position: relative; }
+.slot.filled { background: none; }
 .slot .tile { position: absolute; inset: 0; width: 100%; height: 100%; }
 .tray.warn { animation: nudge .3s 2; }
-.message { min-height: 1.5em; margin: 0; text-align: center; font-size: 16px; color: var(--ink); }
-.helps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 340px; width: 100%; margin: 0 auto; }
-.help { position: relative; border: 0; border-radius: 14px; background: var(--linen); box-shadow: 0 2px 0 var(--sand), 0 3px 8px var(--shadow); padding: 10px 2px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.help svg { width: 28px; height: 28px; }
-.help-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; }
-.badge { position: absolute; top: -8px; right: -4px; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 13px; background: var(--accent); color: var(--linen); font-weight: 600; font-size: 14px; display: grid; place-items: center; line-height: 1; padding-top: 2px; }
-.help.empty { opacity: .5; }
+.message { min-height: 1.4em; margin: 6px 0 0; text-align: center; font-size: 16px; color: var(--linen); }
+
+/* Help buttons: square, symbol only, ivory against the green. */
+.helps { display: flex; justify-content: center; gap: 18px; padding: 8px 0 14px; }
+.help { position: relative; width: 62px; height: 62px; border: 0; border-radius: 14px; background: var(--linen); box-shadow: 0 3px 0 var(--sand), 0 5px 10px rgba(20, 24, 14, .45); display: grid; place-items: center; padding: 0; }
+.help svg { width: 30px; height: 30px; fill: none; stroke: var(--ink); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.help:active { transform: translateY(2px); }
+.badge { position: absolute; top: -9px; right: -9px; min-width: 26px; height: 26px; padding: 2px 6px 0; border-radius: 13px; background: var(--crimson); color: var(--linen); font-weight: 600; font-size: 14px; display: grid; place-items: center; line-height: 1; box-shadow: 0 0 0 2px var(--forest); }
+.help.empty { opacity: .55; }
 .help.empty .badge { background: var(--olive); }
-.help.armed { background: var(--forest); }
+.help.armed { background: var(--terracotta); }
 .help.armed svg { stroke: var(--linen); }
-.help.armed .help-name { color: var(--linen); }
 
 /* Wide screens (tablet on its side): tray and helps beside the board. */
 @media (orientation: landscape) and (min-width: 700px) {
-  #game { display: grid; grid-template-columns: 1fr 300px; grid-template-rows: auto 1fr; column-gap: 20px; }
-  #game .topbar { grid-column: 1 / -1; }
-  #game .side { justify-content: center; }
-  .tray { grid-template-columns: repeat(2, 1fr); max-width: 220px; }
-  .helps { grid-template-columns: repeat(2, 1fr); max-width: 240px; gap: 16px; }
+  #game { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto auto 1fr; grid-template-areas: "top top" "board tray" "board msg" "board helps"; column-gap: 28px; }
+  #game .topbar { grid-area: top; }
+  #game .tray { grid-area: tray; flex-wrap: wrap; width: calc(var(--tw) * 2 + 24px); align-self: start; margin-top: 20px; }
+  #game .message { grid-area: msg; max-width: 260px; }
+  #game .board-wrap { grid-area: board; }
+  #game .helps { grid-area: helps; flex-wrap: wrap; width: 200px; align-self: start; margin: 0 auto; }
 }
 @media (min-width: 700px) {
   .numerals { font-size: 32px; }
-  .help-name { font-size: 12px; }
+  .help { width: 80px; height: 80px; border-radius: 16px; }
+  .help svg { width: 40px; height: 40px; }
+  .iconbtn { width: 56px; height: 56px; }
+  .iconbtn svg { width: 28px; height: 28px; }
 }
 
 /* Progress */
@@ -187,6 +195,4 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .picker .btn { padding: 12px 6px; letter-spacing: .08em; }
 .picker .btn b { display: block; font-size: 20px; }
 .chosen { min-height: 1.5em; margin-top: 12px; font-weight: 600; }
-@media (min-width: 700px) and (orientation: portrait) {
-  .tray, .helps { max-width: 480px; }
-}
+.setting-label { margin: 14px 0 0; font-weight: 600; }

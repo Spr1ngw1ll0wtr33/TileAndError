@@ -11,9 +11,26 @@ function replay(state, ids) {
   return state.status === 'won';
 }
 
-test('tile set has 42 faces and 36 groups', () => {
-  assert.equal(FACES.length, 42);
-  assert.equal(new Set(FACES.map(f => f.group)).size, 36);
+test('tile set: numbers, characters, patterns and themed pictures, each matching only itself', () => {
+  assert.equal(FACES.filter(f => f.kind === 'number').length, 9);
+  assert.equal(FACES.filter(f => f.kind === 'character').length, 4);
+  assert.equal(FACES.filter(f => f.kind === 'pattern').length, 4);
+  assert.ok(FACES.filter(f => f.kind === 'picture').length >= 29);
+  assert.equal(new Set(FACES.map(f => groupOf(f.id))).size, FACES.length);
+});
+
+test('levels mix pictures from different themes', () => {
+  const themesSeen = new Set();
+  const mixes = new Set();
+  for (let lv = 1; lv <= 40; lv++) {
+    const pics = [...new Set(generateLevel(lv).tiles.map(t => t.face))].filter(f => FACES.find(x => x.id === f).kind === 'picture');
+    assert.ok(pics.length > 0, `level ${lv} has no pictures`);
+    const themes = [...new Set(pics.map(f => FACES.find(x => x.id === f).theme))].sort().join('+');
+    themes.split('+').forEach(t => themesSeen.add(t));
+    mixes.add(themes);
+  }
+  assert.equal(themesSeen.size, 4);
+  assert.ok(mixes.size >= 5, `only ${mixes.size} different mixes`);
 });
 
 test('levels are repeatable, even-sized and use matching faces', () => {
@@ -147,8 +164,8 @@ test('hammer smashes a tile and a matching partner, even a covered one', () => {
 
 test('every face draws without error', async () => {
   const { faceSVG } = await import('../js/tiles.js');
-  for (const f of FACES) {
-    const svg = faceSVG(f.id);
-    assert.ok(svg.length > 60 && !svg.includes('undefined') && !svg.includes('NaN'), f.id);
+  for (const palette of ['paper', 'soft']) for (const f of FACES) {
+    const svg = faceSVG(f.id, palette);
+    assert.ok(svg.length > 60 && !svg.includes('undefined') && !svg.includes('NaN'), `${f.id} ${palette}`);
   }
 });

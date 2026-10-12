@@ -5,7 +5,7 @@
 // one free tile, so this never gets stuck). Faces are then handed out along that order so that
 // following it never leaves more than `maxOpen` unmatched tiles in the 4-slot tray.
 
-import { GROUPS, groupOf } from './tiles.js';
+import { ALWAYS, THEMES, groupOf } from './tiles.js';
 import { occupancy, isFree } from './rules.js';
 import { buildLayout } from './layouts.js';
 
@@ -32,9 +32,9 @@ export function seedForLevel(level) {
 
 /** How hard a level is. */
 export function difficulty(level, rng) {
-  const target = level <= 17 ? 36 + (level - 1) * 4 : 80 + Math.floor(rng() * 25) * 2;
+  const target = level <= 17 ? 36 + (level - 1) * 4 : 72 + Math.floor(rng() * 23) * 2;
   const maxOpen = level <= 3 ? 1 : level <= 15 ? 2 : 3;
-  const kinds = Math.min(GROUPS.length, 6 + level);
+  const kinds = Math.min(36, 6 + level);
   return { target, maxOpen, kinds };
 }
 
@@ -60,22 +60,28 @@ function shuffleInPlace(a, rng) {
   return a;
 }
 
-/** Pairs of face ids for a new board, using `kinds` different groups. */
+/**
+ * The faces a level may use: numbers, characters and patterns, plus the pictures from two or
+ * three themes, so each level has its own mix.
+ */
+export function facePool(rng) {
+  const themes = shuffleInPlace(Object.keys(THEMES), rng).slice(0, rng() < 0.5 ? 2 : 3);
+  return { themes, pictures: themes.flatMap(t => THEMES[t]), others: ALWAYS.slice() };
+}
+
+/** Pairs of face ids for a new board, using `kinds` different faces (a little over half pictures). */
 export function makePairs(nPairs, kinds, rng) {
-  kinds = Math.min(GROUPS.length, Math.max(kinds, Math.ceil(nPairs / 2)), nPairs);
-  const groups = shuffleInPlace(GROUPS.slice(), rng).slice(0, kinds);
-  const counts = groups.map(() => 1);
+  const { pictures, others } = facePool(rng);
+  kinds = Math.min(pictures.length + others.length, Math.max(kinds, Math.ceil(nPairs / 2)), nPairs);
+  const nPics = Math.min(pictures.length, Math.ceil(kinds * 0.55));
+  const faces = [
+    ...shuffleInPlace(pictures.slice(), rng).slice(0, nPics),
+    ...shuffleInPlace(others, rng).slice(0, kinds - nPics),
+  ];
+  const counts = faces.map(() => 1);
   for (let extra = nPairs - kinds, i = 0; extra > 0; extra--, i++) counts[i % kinds]++;
   const pairs = [];
-  groups.forEach((g, gi) => {
-    for (let p = 0; p < counts[gi]; p++) {
-      if (g.faces.length === 1) pairs.push([g.faces[0], g.faces[0]]);
-      else {
-        const two = shuffleInPlace(g.faces.slice(), rng).slice(0, 2);
-        pairs.push(two);
-      }
-    }
-  });
+  faces.forEach((f, i) => { for (let p = 0; p < counts[i]; p++) pairs.push([f, f]); });
   return shuffleInPlace(pairs, rng);
 }
 

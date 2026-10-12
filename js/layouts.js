@@ -1,8 +1,8 @@
-// Board shapes, built to suit an upright phone screen (at most 7 tiles across, 9 down).
+// Board shapes, built to suit an upright phone screen (at most 6 tiles across, 7 down).
 // Positions are in half-tile units: {x, y, z}.
 
-const MAX_W = 7;
-const MAX_H = 9;
+const MAX_W = 6;
+const MAX_H = 7;
 
 const k2 = (x, y) => `${x},${y}`;
 

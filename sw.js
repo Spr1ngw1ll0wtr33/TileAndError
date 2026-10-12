@@ -3,7 +3,7 @@
 // only ever touches caches whose names start with its own prefix.
 
 const PREFIX = 'tile-and-error-';
-const CACHE = `${PREFIX}v1.0.3`;
+const CACHE = `${PREFIX}v1.1.0`;
 const FILES = [
   './',
   'index.html',
@@ -20,6 +20,7 @@ const FILES = [
   'fonts/poiret-one-latin-400-normal.woff2',
   'fonts/josefin-sans-latin-400-normal.woff2',
   'fonts/josefin-sans-latin-600-normal.woff2',
+  'fonts/josefin-sans-latin-700-normal.woff2',
   'fonts/josefin-sans-latin-300-italic.woff2',
   'fonts/noto-serif-sc-tiles.woff2',
   'icons/icon-192.png',

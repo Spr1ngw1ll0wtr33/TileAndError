@@ -11,7 +11,7 @@ export function newProfile() {
     helps: { hint: 1, shuffle: 1, undo: 1, hammer: 1 },
     stats: { played: 0, won: 0, lost: 0, abandoned: 0 },
     streak: { current: 0, best: 0, lastDay: null },
-    settings: { dimBlocked: true, cornerIndex: true },
+    settings: { dimBlocked: true, palette: 'paper' },
     pendingPrize: null, // a prize won but not yet chosen
     created: new Date().toISOString(),
   };
