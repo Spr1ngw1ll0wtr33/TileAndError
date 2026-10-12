@@ -107,7 +107,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #game .topbar { padding: 10px 0 4px; }
 #game .numerals { color: var(--linen); }
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 0 6px; gap: 10px; }
-.board-wrap { flex: 1; position: relative; min-height: 0; }
+.board-wrap { flex: 1; position: relative; min-height: 0; margin: 8px 0 18px; }
 .board { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
 .board.armed .tile { cursor: crosshair; }
 
