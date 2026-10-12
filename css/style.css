@@ -195,4 +195,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .picker .btn { padding: 12px 6px; letter-spacing: .08em; }
 .picker .btn b { display: block; font-size: 20px; }
 .chosen { min-height: 1.5em; margin-top: 12px; font-weight: 600; }
+.diag { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; margin: 14px 0; color: var(--olive); }
+.diag dt { font-weight: 600; }
+.diag dd { margin: 0; overflow-wrap: anywhere; }
 .setting-label { margin: 14px 0 0; font-weight: 600; }

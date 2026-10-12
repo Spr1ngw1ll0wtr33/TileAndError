@@ -24,6 +24,7 @@
     </div></div>
   </div>
   <div class="home-actions">
+    <button class="btn dark" id="installBtn" hidden>Install Tile and Error</button>
     <button class="btn primary" id="playBtn">Play level 1</button>
     <button class="btn" data-go="progress">Progress</button>
     <button class="btn" data-go="settings">How to play &amp; settings</button>
@@ -124,6 +125,11 @@
   <p class="setting-label">Tile colours</p>
   <label class="toggle"><input type="radio" name="palette" value="paper" id="palPaper"> <span>Paper: crimson, terracotta, olive and ink</span></label>
   <label class="toggle"><input type="radio" name="palette" value="soft" id="palSoft"> <span>Soft classic: gentle red, green and blue</span></label>
+  <div class="diamond"><i></i></div>
+  <h3 class="label">Installing the app</h3>
+  <p class="body-text" id="installNote"></p>
+  <button class="btn dark" id="installBtn2" hidden>Install Tile and Error</button>
+  <dl class="diag" id="diag"></dl>
   <p class="home-foot label" id="version"></p>
 </section>
 

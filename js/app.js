@@ -6,7 +6,7 @@ import { sameGroup } from './rules.js';
 import { newGame, tapTile, freeIds, undoMove, canUndo, findHint, shuffleBoard, hammer, carryOn, carryOnCost, TRAY_SIZE } from './game.js';
 import { newProfile, recordResult, recordPlayDay, currentStreak, applyPrize, levelsToNextPrize, winRate, HELPS, HELP_NAMES } from './progress.js';
 
-const VERSION = '1.1.0';
+const VERSION = '1.1.1';
 const $ = id => document.getElementById(id);
 
 let profile = null;
@@ -494,11 +494,62 @@ function renderSettings() {
   $('palPaper').checked = profile.settings.palette !== 'soft';
   $('palSoft').checked = profile.settings.palette === 'soft';
   $('version').textContent = `Tile & Error · version ${VERSION}`;
+  updateInstallUI();
 }
 $('setDim').addEventListener('change', e => { profile.settings.dimBlocked = e.target.checked; saveAll(); });
 for (const id of ['palPaper', 'palSoft']) {
   $(id).addEventListener('change', e => { if (e.target.checked) { profile.settings.palette = e.target.value; saveAll(); } });
 }
+
+// ---------- installing ----------
+// Chrome offers its direct install route (the 'beforeinstallprompt' event) only when it believes
+// the app is installable and not already installed. We catch it and offer our own button.
+
+let installEvent = null;
+let installOffered = false;
+const standalone = () => matchMedia('(display-mode: standalone)').matches;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installEvent = e;
+  installOffered = true;
+  updateInstallUI();
+});
+window.addEventListener('appinstalled', () => {
+  installEvent = null;
+  updateInstallUI('Installed. Tile and Error should now be in your app list.');
+});
+
+function updateInstallUI(note) {
+  for (const id of ['installBtn', 'installBtn2']) $(id).hidden = !installEvent || standalone();
+  let text;
+  if (note) text = note;
+  else if (standalone()) text = 'You are using the installed app.';
+  else if (installEvent) text = 'Chrome is ready to install the app. Tap the button below.';
+  else text = 'Chrome has not offered to install the app on this page. This usually means Chrome believes it is already installed. If you are asked, a screenshot of this section helps.';
+  $('installNote').textContent = text;
+  const ua = navigator.userAgent;
+  const rows = [
+    ['Version', VERSION],
+    ['Address', location.origin + location.pathname],
+    ['Installed app', standalone() ? 'yes' : 'no (running in the browser)'],
+    ['Install offered', installOffered ? 'yes' : 'no'],
+    ['Offline helper', navigator.serviceWorker && navigator.serviceWorker.controller ? 'active' : 'not active'],
+    ['Chrome', (ua.match(/Chrome\/([\d.]+)/) || [, 'unknown'])[1]],
+    ['Android', (ua.match(/Android ([\d.]+)/) || [, 'unknown'])[1]],
+  ];
+  $('diag').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+}
+
+async function install() {
+  if (!installEvent) return updateInstallUI();
+  installEvent.prompt();
+  const { outcome } = await installEvent.userChoice;
+  installEvent = null;
+  updateInstallUI(outcome === 'accepted' ? 'Installing. It can take a minute to appear in your app list.' : 'Installation was cancelled. Reload the page to try again.');
+}
+$('installBtn').addEventListener('click', install);
+$('installBtn2').addEventListener('click', install);
 
 // ---------- start up ----------
 
@@ -515,6 +566,7 @@ async function load() {
 
 async function init() {
   await load();
+  updateInstallUI();
   show('home');
   if (game && game.status === 'trayFull') {
     // Bring them straight back to the decision.
