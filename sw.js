@@ -3,7 +3,7 @@
 // only ever touches caches whose names start with its own prefix.
 
 const PREFIX = 'tile-and-error-';
-const CACHE = `${PREFIX}v1.0.2`;
+const CACHE = `${PREFIX}v1.0.3`;
 const FILES = [
   './',
   'index.html',
@@ -24,6 +24,7 @@ const FILES = [
   'fonts/noto-serif-sc-tiles.woff2',
   'icons/icon-192.png',
   'icons/icon-512.png',
+  'icons/maskable-512.png',
 ];
 
 self.addEventListener('install', event => {
