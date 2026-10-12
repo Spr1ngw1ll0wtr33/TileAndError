@@ -4,17 +4,17 @@ An advert-free Mahjong solitaire game for my own phone and tablet. It has a 4-sl
 
 It is a web app (a "PWA"). It is published with GitHub Pages and installed from Chrome, just like Garden Diary, Memory Jar and Boundaries.
 
-- **Web address:** https://spr1ngw1ll0wtr33.github.io/Mahjong/
+- **Web address:** https://spr1ngw1ll0wtr33.github.io/TileAndError/
 - **Name on the phone:** Tile and Error. The title inside the game is "Tile & Error".
-- **Manifest Id:** `/Mahjong/tile-and-error` (its own identity, so it can't clash with the other apps)
+- **Manifest Id:** `/TileAndError/` (its own identity, so it can't clash with the other apps)
 
-The installed name avoids "&". The first version used it, and on 12/10/2026 Chrome said the app was "already installed" but could not open it. The "&" is the main suspect, since Android's app-building tools are known to trip over it. The identity was changed from `/Mahjong/` at the same time, so that Chrome treats this version as a new app.
+**History of the address.** The app was first published at `/Mahjong/` with the installed name "Tile & Error". On 12/10/2026 Chrome said it was "already installed" but could not open it, and the app never appeared in `chrome://webapks`. Two changes made no difference: removing the "&" from the name, and changing the app's identity. That showed Chrome was matching on the web address itself. The likely cause is that the first install attempt failed partway, probably because of the "&", and left a broken record attached to `/Mahjong/`. The repository was therefore renamed to TileAndError to give the app a fresh address.
 
 ---
 
 ## 1. Switch on GitHub Pages (once only, on the computer)
 
-1. Go to https://github.com/Spr1ngw1ll0wtr33/Mahjong and sign in.
+1. Go to https://github.com/Spr1ngw1ll0wtr33/TileAndError and sign in.
 2. Click **Settings** (the cog tab along the top of the repository).
 3. In the left-hand menu, click **Pages**.
 4. Under **Build and deployment**, set **Source** to **Deploy from a branch**.
@@ -23,13 +23,13 @@ The installed name avoids "&". The first version used it, and on 12/10/2026 Chro
 
 ## 2. Install it on the phone or tablet
 
-1. Open **Chrome** and go to **https://spr1ngw1ll0wtr33.github.io/Mahjong/**. Use the capital **M**.
+1. Open **Chrome** and go to **https://spr1ngw1ll0wtr33.github.io/TileAndError/**. Use the capitals **T**, **A** and **E**.
 2. Wait for the home screen with the arch to appear.
 3. Tap **⋮** (three dots, top right).
 4. Tap **Install** (sometimes **Add to Home screen → Install**). Do **not** choose "Create shortcut", because shortcuts don't show in O'launcher.
 5. **Tile and Error** now appears in O'launcher. Open it from there.
 
-To check it installed properly, type `chrome://webapks` into Chrome's address bar. Look for Tile and Error and check that **Manifest Id** ends in `/Mahjong/tile-and-error`.
+To check it installed properly, type `chrome://webapks` into Chrome's address bar. Look for Tile and Error and check that **Manifest Id** ends in `/TileAndError/`.
 
 ## 3. Updates
 
@@ -76,10 +76,10 @@ You start with one of each.
 
 ## For whoever maintains it
 
-- Plain HTML, CSS and JavaScript, with no build step. Open `index.html` through any web server, at the path `/Mahjong/`.
+- Plain HTML, CSS and JavaScript, with no build step. Open `index.html` through any web server, at the path `/TileAndError/`.
 - Tests: `npm test` (Node 18 or later). They check that 500 generated levels can all be cleared without the tray filling, as well as the tray, Carry on, hammer, shuffle, prizes and streaks.
 - **Shared address rules** (all of these apps live at spr1ngw1ll0wtr33.github.io):
-  - The manifest `id` is `/Mahjong/tile-and-error`; `scope` and `start_url` are `/Mahjong/`.
+  - The manifest `id`, `scope` and `start_url` are all `/TileAndError/`.
   - Keep the manifest `name` free of "&" and other symbols.
   - Service worker caches start with `tile-and-error-`, and only those are ever deleted.
   - The IndexedDB database is called `tile-and-error`.

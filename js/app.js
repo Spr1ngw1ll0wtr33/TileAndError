@@ -6,7 +6,7 @@ import { sameGroup } from './rules.js';
 import { newGame, tapTile, freeIds, undoMove, canUndo, findHint, shuffleBoard, hammer, carryOn, carryOnCost, TRAY_SIZE } from './game.js';
 import { newProfile, recordResult, recordPlayDay, currentStreak, applyPrize, levelsToNextPrize, winRate, HELPS, HELP_NAMES } from './progress.js';
 
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 const $ = id => document.getElementById(id);
 
 let profile = null;
@@ -83,6 +83,7 @@ function renderHome() {
   $('playBtn').textContent = game && game.level === profile.level && game.moves > 0 ? `Continue level ${profile.level}` : `Play level ${profile.level}`;
   const streak = currentStreak(profile);
   $('homeFoot').textContent = streak ? `${plural(streak, 'day')} in a row` : '';
+  $('homeVersion').textContent = `Version ${VERSION}`;
   $('homeMotif').innerHTML = `<div class="tile">${faceSVG('drR')}</div>`;
 }
 

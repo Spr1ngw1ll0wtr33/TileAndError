@@ -3,7 +3,7 @@
 // only ever touches caches whose names start with its own prefix.
 
 const PREFIX = 'tile-and-error-';
-const CACHE = `${PREFIX}v1.0.1`;
+const CACHE = `${PREFIX}v1.0.2`;
 const FILES = [
   './',
   'index.html',

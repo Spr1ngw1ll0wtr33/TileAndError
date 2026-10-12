@@ -1,10 +1,10 @@
 {
-  "id": "/Mahjong/tile-and-error",
+  "id": "/TileAndError/",
   "name": "Tile and Error",
   "short_name": "Tile and Error",
   "description": "An advert-free Mahjong solitaire game.",
-  "start_url": "/Mahjong/",
-  "scope": "/Mahjong/",
+  "start_url": "/TileAndError/",
+  "scope": "/TileAndError/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#E9E0CC",
