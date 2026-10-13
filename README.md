@@ -51,7 +51,7 @@ The phone and tablet keep **separate** progress unless you copy a backup file fr
 ## How the game works
 
 - Tap a **free** tile to move it into the tray. A tile is free when nothing lies on top of it and its left or right side is clear.
-- Two identical tiles in the tray vanish.
+- Two identical tiles in the tray click together and vanish. A level never has more than 4 of any one tile, and most tiles appear just as a single pair.
 - Each tile shows one symbol: a number (1 to 9), a simple Chinese character (中 山 火 水), a traditional pattern of circles or bamboo, or a picture. The pictures come in four themes (Chinese nature, Chinese emblems, seaside, and garden and sky). Each level mixes two or three themes, so the mix changes from level to level.
 - **Tile colours** can be switched in Settings: **Paper** (crimson, terracotta, olive and ink) or **Soft classic** (gentle red, green and blue).
 - The tray holds 4 tiles. If it fills with no pair, you choose between:

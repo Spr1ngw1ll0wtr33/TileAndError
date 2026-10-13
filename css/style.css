@@ -126,13 +126,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .tile.nudge { animation: nudge .25s; }
 @keyframes pulse { 50% { transform: translateY(-3px); } }
 @keyframes nudge { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
-.flying { position: fixed; z-index: 50; pointer-events: none; transition: left .17s ease-out, top .17s ease-out, width .17s, height .17s, opacity .15s, transform .15s; }
+.flying { position: fixed; z-index: 50; pointer-events: none; transform-origin: center; }
 
 /* Tray: four slots the size of a board tile, set into a darker recess. */
 .tray { display: flex; gap: 8px; padding: 8px; margin: 2px auto 0; background: var(--ink); border-radius: 12px; box-shadow: inset 2px 3px 8px rgba(0, 0, 0, .45); }
 .slot { width: var(--tw); height: var(--th); border-radius: 12% / 10%; background: var(--olive); position: relative; }
-.slot.filled { background: none; }
-.slot .tile { position: absolute; inset: 0; width: 100%; height: 100%; }
+.slot .tile { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; }
 .tray.warn { animation: nudge .3s 2; }
 .message { min-height: 1.4em; margin: 6px 0 0; text-align: center; font-size: 16px; color: var(--linen); }
 

@@ -32,6 +32,11 @@ other apps: My Bin, Memory Jar, Garden Diary and Boundaries. Read the README fir
 - Game screen: Forest green table, ivory tiles, tray at the top with tile-sized slots, square
   symbol-only help buttons. Board sizes are capped at 6 tiles across and 7 down so tiles are large.
 - Soft colours, not bright ones. Two schemes are available in Settings.
+- Tile mix (13/10/2026): about three quarters as many kinds as pairs, so most kinds appear once as a
+  pair and some twice. Never more than 4 of any tile.
+- Matching animation (13/10/2026): a matching tile glides in beside its partner (other tray tiles
+  slide along to make room), the pair rests, clicks together and fades, and the tray closes up. It
+  takes about 1.2 seconds: calm, not whizzing.
 
 ## Working with Kathryn
 - She is not a developer. Give plain-English, numbered, step-by-step instructions, and avoid jargon:

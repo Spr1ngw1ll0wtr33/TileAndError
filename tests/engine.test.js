@@ -69,6 +69,17 @@ test('the planned order clears 500 levels without the tray ever filling', () => 
   }
 });
 
+test('mostly single pairs, never more than 4 of any tile', () => {
+  for (let lv = 1; lv <= 500; lv++) {
+    const ts = generateLevel(lv).tiles;
+    const c = {};
+    for (const t of ts) c[t.face] = (c[t.face] || 0) + 1;
+    const counts = Object.values(c);
+    assert.ok(Math.max(...counts) <= 4, `level ${lv} has ${Math.max(...counts)} of one tile`);
+    assert.ok(counts.length >= 0.7 * (ts.length / 2), `level ${lv}: ${counts.length} kinds for ${ts.length / 2} pairs`);
+  }
+});
+
 test('free-tile rule: covered or hemmed-in tiles are not free', () => {
   const tiles = [
     { x: 0, y: 0, z: 0 }, { x: 2, y: 0, z: 0 }, { x: 4, y: 0, z: 0 },

@@ -34,8 +34,7 @@ export function seedForLevel(level) {
 export function difficulty(level, rng) {
   const target = level <= 17 ? 36 + (level - 1) * 4 : 72 + Math.floor(rng() * 23) * 2;
   const maxOpen = level <= 3 ? 1 : level <= 15 ? 2 : 3;
-  const kinds = Math.min(36, 6 + level);
-  return { target, maxOpen, kinds };
+  return { target, maxOpen };
 }
 
 /** A random order in which the given tiles can all be removed, one free tile at a time. */
@@ -64,20 +63,29 @@ function shuffleInPlace(a, rng) {
  * The faces a level may use: numbers, characters and patterns, plus the pictures from two or
  * three themes, so each level has its own mix.
  */
-export function facePool(rng) {
-  const themes = shuffleInPlace(Object.keys(THEMES), rng).slice(0, rng() < 0.5 ? 2 : 3);
+export function facePool(rng, needed = 0) {
+  const order = shuffleInPlace(Object.keys(THEMES), rng);
+  let n = rng() < 0.5 ? 2 : 3;
+  // Big boards need more kinds of tile: add themes until there are enough.
+  while (n < order.length && ALWAYS.length + order.slice(0, n).flatMap(t => THEMES[t]).length < needed) n++;
+  const themes = order.slice(0, n);
   return { themes, pictures: themes.flatMap(t => THEMES[t]), others: ALWAYS.slice() };
 }
 
-/** Pairs of face ids for a new board, using `kinds` different faces (a little over half pictures). */
-export function makePairs(nPairs, kinds, rng) {
-  const { pictures, others } = facePool(rng);
-  kinds = Math.min(pictures.length + others.length, Math.max(kinds, Math.ceil(nPairs / 2)), nPairs);
-  const nPics = Math.min(pictures.length, Math.ceil(kinds * 0.55));
+/**
+ * Pairs of face ids for a new board. About three quarters as many kinds as pairs, so most kinds
+ * appear as one pair and some as two: never more than 4 of any tile. A little over half are pictures.
+ */
+export function makePairs(nPairs, rng) {
+  let kinds = Math.ceil(nPairs * 0.75);
+  const { pictures, others } = facePool(rng, kinds);
+  kinds = Math.max(Math.ceil(nPairs / 2), Math.min(kinds, pictures.length + others.length));
+  const nPics = Math.min(pictures.length, Math.max(Math.ceil(kinds * 0.55), kinds - others.length));
   const faces = [
     ...shuffleInPlace(pictures.slice(), rng).slice(0, nPics),
     ...shuffleInPlace(others, rng).slice(0, kinds - nPics),
   ];
+  shuffleInPlace(faces, rng); // which kinds get a second pair is random
   const counts = faces.map(() => 1);
   for (let extra = nPairs - kinds, i = 0; extra > 0; extra--, i++) counts[i % kinds]++;
   const pairs = [];
@@ -132,7 +140,7 @@ export function generateLevel(level) {
   const { name, positions } = buildLayout(d.target, rng);
   const tiles = positions.map((p, id) => ({ id, ...p }));
   const order = removalOrder(tiles, rng);
-  const faces = assignFaces(order, makePairs(tiles.length / 2, d.kinds, rng), [], d.maxOpen, rng);
+  const faces = assignFaces(order, makePairs(tiles.length / 2, rng), [], d.maxOpen, rng);
   for (const t of tiles) t.face = faces.get(t);
   return { level, layout: name, maxOpen: d.maxOpen, tiles, solution: order.map(t => t.id) };
 }

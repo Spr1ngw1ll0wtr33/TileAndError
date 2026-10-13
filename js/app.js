@@ -6,7 +6,7 @@ import { sameGroup } from './rules.js';
 import { newGame, tapTile, freeIds, undoMove, canUndo, findHint, shuffleBoard, hammer, carryOn, carryOnCost, TRAY_SIZE } from './game.js';
 import { newProfile, recordResult, recordPlayDay, currentStreak, applyPrize, levelsToNextPrize, winRate, HELPS, HELP_NAMES } from './progress.js';
 
-const VERSION = '1.1.2';
+const VERSION = '1.1.3';
 const $ = id => document.getElementById(id);
 
 let profile = null;
@@ -192,6 +192,25 @@ $('board').addEventListener('click', e => {
   play(id, el);
 });
 
+// Timings for a tile moving into the tray and a pair clearing (halved if the phone asks for less motion).
+const SLOW = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.5 : 1;
+const T = { fly: 280 * SLOW, rest: 250 * SLOW, together: 220 * SLOW, click: 120 * SLOW, clear: 250 * SLOW, close: 200 * SLOW };
+
+/** A copy of a tile, floating above the page at the given position, for animating. */
+function flyer(el, rect) {
+  const f = el.cloneNode(true);
+  f.classList.add('flying');
+  f.classList.remove('blocked', 'hint', 'nudge');
+  Object.assign(f.style, { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px`, visibility: 'visible' });
+  document.body.appendChild(f);
+  return f;
+}
+
+function moveTo(f, rect, ms, easing = 'cubic-bezier(.2,.7,.3,1)') {
+  f.style.transition = ['left', 'top', 'width', 'height'].map(p => `${p} ${ms}ms ${easing}`).join(', ');
+  Object.assign(f.style, { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` });
+}
+
 async function play(id, el) {
   if (game.status !== 'playing') return;
   if (!freeIds(game).has(id)) {
@@ -201,29 +220,70 @@ async function play(id, el) {
   }
   say('');
   recordPlayDay(profile);
-  // Work out where it lands, so it can fly there.
-  const partner = game.tray.find(o => sameGroup(game.tiles[o].face, game.tiles[id].face));
-  const slotIndex = partner !== undefined ? game.tray.indexOf(partner) : game.tray.length;
-  const from = el.getBoundingClientRect();
-  const to = $('tray').children[Math.min(slotIndex, TRAY_SIZE - 1)].getBoundingClientRect();
   busy = true;
-  const clone = el.cloneNode(true);
-  clone.classList.add('flying');
-  clone.classList.remove('blocked', 'hint');
-  Object.assign(clone.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, zIndex: '50' });
-  document.body.appendChild(clone);
+  const slots = $('tray').children;
+  const partner = game.tray.find(o => sameGroup(game.tiles[o].face, game.tiles[id].face));
+  // 1. Glide into the tray. A matching tile goes right next to its partner: any tiles after the
+  //    partner first slide along one place to make room.
+  let targetIndex = game.tray.length;
+  if (partner !== undefined) {
+    targetIndex = game.tray.indexOf(partner) + 1;
+    const step = slots[1].getBoundingClientRect().left - slots[0].getBoundingClientRect().left;
+    const after = game.tray.slice(targetIndex).map(o => slots[game.tray.indexOf(o)].querySelector('.tile'));
+    for (const t of after) { t.style.transition = `transform ${T.close}ms ease-out`; t.style.transform = `translateX(${step}px)`; }
+    if (after.length) await wait(T.close);
+  }
+  const target = slots[targetIndex].getBoundingClientRect();
+  const tile = flyer(el, el.getBoundingClientRect());
   el.style.visibility = 'hidden';
   await nextFrame();
-  Object.assign(clone.style, { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px` });
-  await wait(180);
-  const result = tapTile(game, id);
-  render();
-  if (result && result.matched) {
-    clone.style.opacity = '0';
-    clone.style.transform = 'scale(.6)';
-    await wait(150);
+  moveTo(tile, target, T.fly);
+  await wait(T.fly);
+
+  if (partner === undefined) {
+    tapTile(game, id);
+    render();
+    tile.remove();
+    busy = false;
+    return afterMove();
   }
-  clone.remove();
+
+  // 2. Rest a moment side by side.
+  const partnerEl = slots[game.tray.indexOf(partner)].querySelector('.tile');
+  const partnerRect = partnerEl.getBoundingClientRect();
+  const mate = flyer(partnerEl, partnerRect);
+  partnerEl.style.visibility = 'hidden';
+  await wait(T.rest);
+
+  // 3. Slide together until they touch, then a small click.
+  const meet = (partnerRect.left + partnerRect.width + target.left) / 2;
+  const w = target.width;
+  moveTo(mate, { ...partnerRect, left: meet - w }, T.together, 'ease-in-out');
+  moveTo(tile, { ...target, left: meet }, T.together, 'ease-in-out');
+  await wait(T.together);
+  for (const f of [tile, mate]) { f.style.transition = `transform ${T.click}ms ease-out`; f.style.transform = 'scale(1.06)'; }
+  await wait(T.click);
+
+  // 4. Clear: shrink and fade together.
+  for (const f of [tile, mate]) { f.style.transition = `transform ${T.clear}ms ease-in, opacity ${T.clear}ms ease-in`; f.style.transform = 'scale(.5)'; f.style.opacity = '0'; }
+  await wait(T.clear);
+  tile.remove();
+  mate.remove();
+
+  // 5. Close up: the tiles left in the tray slide along into the freed space.
+  const before = new Map(game.tray.filter(o => o !== partner).map(o => [o, slots[game.tray.indexOf(o)].getBoundingClientRect().left]));
+  tapTile(game, id);
+  render();
+  for (const [o, oldLeft] of before) {
+    const t = slots[game.tray.indexOf(o)].querySelector('.tile');
+    const dx = oldLeft - t.getBoundingClientRect().left;
+    if (!dx) continue;
+    t.style.transition = 'none';
+    t.style.transform = `translateX(${dx}px)`;
+  }
+  await nextFrame();
+  for (const t of $('tray').querySelectorAll('.tile')) { t.style.transition = `transform ${T.close}ms ease-out`; t.style.transform = ''; }
+  await wait(T.close);
   busy = false;
   afterMove();
 }
@@ -589,4 +649,4 @@ async function init() {
 init();
 
 // For testing in the browser console.
-window.__tileAndError = { get game() { return game; }, get profile() { return profile; }, render };
+window.__tileAndError = { get game() { return game; }, get profile() { return profile; }, get busy() { return busy; }, render };
