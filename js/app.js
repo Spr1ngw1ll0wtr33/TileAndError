@@ -6,13 +6,15 @@ import { sameGroup } from './rules.js';
 import { newGame, tapTile, freeIds, undoMove, canUndo, findHint, shuffleBoard, hammer, carryOn, carryOnCost, TRAY_SIZE } from './game.js';
 import { newProfile, recordResult, recordPlayDay, currentStreak, applyPrize, levelsToNextPrize, winRate, HELPS, HELP_NAMES } from './progress.js';
 
-const VERSION = '1.1.3';
+const VERSION = '1.1.4';
 const $ = id => document.getElementById(id);
 
 let profile = null;
 let game = null;
 let resumedAt = 0; // when the clock last started for the current game
 let busy = false; // true while a tile is flying
+let current = null; // the tile being animated
+const queue = []; // tiles tapped while another was still moving, played in turn
 let hammerArmed = false;
 let tileEls = new Map();
 let historyShown = 20;
@@ -97,6 +99,7 @@ $('playBtn').addEventListener('click', () => {
 
 function startGameView() {
   hammerArmed = false;
+  clearQueue();
   buildBoard();
   show('game');
   render();
@@ -186,15 +189,47 @@ function say(text) {
 
 $('board').addEventListener('click', e => {
   const el = e.target.closest('.tile');
-  if (!el || busy) return;
+  if (!el) return;
   const id = Number(el.dataset.id);
-  if (hammerArmed) return smash(id);
+  if (hammerArmed) return busy ? undefined : smash(id);
+  if (busy) {
+    // Never lose a tap: remember it and play it as soon as the current move finishes.
+    if (game.status === 'playing' && id !== current && !queue.includes(id)) {
+      queue.push(id);
+      el.classList.add('queued');
+    }
+    return;
+  }
   play(id, el);
 });
 
 // Timings for a tile moving into the tray and a pair clearing (halved if the phone asks for less motion).
 const SLOW = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.5 : 1;
-const T = { fly: 280 * SLOW, rest: 250 * SLOW, together: 220 * SLOW, click: 120 * SLOW, clear: 250 * SLOW, close: 200 * SLOW };
+const BASE = { fly: 200, rest: 120, together: 150, click: 70, clear: 170, close: 150 };
+let T = { ...BASE };
+/** Normal pace, or double speed with no pause when more taps are waiting. */
+function setPace() {
+  const k = SLOW * (queue.length ? 0.5 : 1);
+  T = Object.fromEntries(Object.entries(BASE).map(([n, ms]) => [n, ms * k]));
+  if (queue.length) T.rest = 0;
+}
+
+/** Finish a move, then play the next queued tap, if any. */
+function finishMove() {
+  busy = false;
+  current = null;
+  afterMove();
+  if (game && game.status === 'playing' && $('overlay').hidden && queue.length) {
+    const next = queue.shift();
+    const el = tileEls.get(next);
+    el.classList.remove('queued');
+    play(next, el);
+  } else clearQueue();
+}
+
+function clearQueue() {
+  for (const id of queue.splice(0)) { const el = tileEls.get(id); if (el) el.classList.remove('queued'); }
+}
 
 /** A copy of a tile, floating above the page at the given position, for animating. */
 function flyer(el, rect) {
@@ -212,15 +247,18 @@ function moveTo(f, rect, ms, easing = 'cubic-bezier(.2,.7,.3,1)') {
 }
 
 async function play(id, el) {
-  if (game.status !== 'playing') return;
+  if (game.status !== 'playing') return clearQueue();
   if (!freeIds(game).has(id)) {
     el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge');
     say('That tile is not free yet.');
+    if (queue.length) { busy = true; return finishMove(); }
     return;
   }
   say('');
   recordPlayDay(profile);
   busy = true;
+  current = id;
+  setPace();
   const slots = $('tray').children;
   const partner = game.tray.find(o => sameGroup(game.tiles[o].face, game.tiles[id].face));
   // 1. Glide into the tray. A matching tile goes right next to its partner: any tiles after the
@@ -244,8 +282,7 @@ async function play(id, el) {
     tapTile(game, id);
     render();
     tile.remove();
-    busy = false;
-    return afterMove();
+    return finishMove();
   }
 
   // 2. Rest a moment side by side.
@@ -253,7 +290,8 @@ async function play(id, el) {
   const partnerRect = partnerEl.getBoundingClientRect();
   const mate = flyer(partnerEl, partnerRect);
   partnerEl.style.visibility = 'hidden';
-  await wait(T.rest);
+  setPace(); // speed up if she has tapped on while the tile was gliding in
+  if (T.rest) await wait(T.rest);
 
   // 3. Slide together until they touch, then a small click.
   const meet = (partnerRect.left + partnerRect.width + target.left) / 2;
@@ -284,8 +322,7 @@ async function play(id, el) {
   await nextFrame();
   for (const t of $('tray').querySelectorAll('.tile')) { t.style.transition = `transform ${T.close}ms ease-out`; t.style.transform = ''; }
   await wait(T.close);
-  busy = false;
-  afterMove();
+  finishMove();
 }
 
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));

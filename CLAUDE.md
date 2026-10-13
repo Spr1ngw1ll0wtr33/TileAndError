@@ -35,8 +35,10 @@ other apps: My Bin, Memory Jar, Garden Diary and Boundaries. Read the README fir
 - Tile mix (13/10/2026): about three quarters as many kinds as pairs, so most kinds appear once as a
   pair and some twice. Never more than 4 of any tile.
 - Matching animation (13/10/2026): a matching tile glides in beside its partner (other tray tiles
-  slide along to make room), the pair rests, clicks together and fades, and the tray closes up. It
-  takes about 1.2 seconds: calm, not whizzing.
+  slide along to make room), the pair rests, clicks together and fades, and the tray closes up.
+- Pace (13/10/2026): Kathryn found 1.2 seconds too slow and taps were being lost. A match now takes
+  about 0.85 seconds. Taps made during an animation are queued (never ignored; a double tap counts
+  once), a queued tile lifts slightly, and queued moves run at double speed with no pause.
 
 ## Working with Kathryn
 - She is not a developer. Give plain-English, numbered, step-by-step instructions, and avoid jargon:

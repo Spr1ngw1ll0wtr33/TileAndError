@@ -124,6 +124,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .tile.gone { display: none; }
 .tile.hint { box-shadow: 0 0 0 3px var(--terracotta), 3px 4.5px 0 var(--khaki), 4px 7px 9px rgba(20, 24, 14, .45); animation: pulse 0.8s ease-in-out 3; }
 .tile.nudge { animation: nudge .25s; }
+.tile.queued { transform: translateY(-5px); box-shadow: 0 0 0 2px var(--terracotta), 3px 4.5px 0 var(--khaki), 4px 9px 10px rgba(20, 24, 14, .45); }
 @keyframes pulse { 50% { transform: translateY(-3px); } }
 @keyframes nudge { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 .flying { position: fixed; z-index: 50; pointer-events: none; transform-origin: center; }
