@@ -3,7 +3,7 @@
 // only ever touches caches whose names start with its own prefix.
 
 const PREFIX = 'tile-and-error-';
-const CACHE = `${PREFIX}v1.1.5`;
+const CACHE = `${PREFIX}v1.1.6`;
 const FILES = [
   './',
   'index.html',
@@ -29,7 +29,9 @@ const FILES = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: 'reload' fetches every file fresh from GitHub, not from the phone's short-term web cache,
+  // so a new version never gets built from the previous version's files.
+  event.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', event => {
@@ -62,7 +64,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.open(CACHE).then(async cache => {
       const cached = await cache.match(req, { ignoreSearch: true });
-      const fresh = fetch(req).then(res => {
+      const fresh = fetch(req, { cache: 'no-cache' }).then(res => {
         if (res.ok) cache.put(req, res.clone());
         return res;
       }).catch(() => null);

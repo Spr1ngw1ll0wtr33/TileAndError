@@ -17,6 +17,11 @@ other apps: My Bin, Memory Jar, Garden Diary and Boundaries. Read the README fir
    build, and that warning was set aside.
 4. **Never advise clearing "Cookies and site data"** for this address. It wipes every app's saved data
    at once. "Cached images and files" only is safe.
+7. **Updates must fetch fresh files (15/10/2026).** Version 1.1.5 failed to reach the phone: the
+   service worker's install step used `addAll(FILES)`, which can be served from the phone's HTTP cache
+   (GitHub Pages allows 10 minutes), so the new cache was filled with the old files. Install now uses
+   `cache: 'reload'`, background refreshes use `cache: 'no-cache'`, and registration uses
+   `updateViaCache: 'none'`. Keep it that way.
 5. **To show which version the phone has**, the home screen shows the version number in small print.
    When releasing a change, bump `VERSION` in `js/app.js` and `CACHE` in `sw.js` together.
 
