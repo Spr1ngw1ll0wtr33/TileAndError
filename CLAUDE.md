@@ -39,6 +39,8 @@ other apps: My Bin, Memory Jar, Garden Diary and Boundaries. Read the README fir
 - Pace (13/10/2026): Kathryn found 1.2 seconds too slow and taps were being lost. A match now takes
   about 0.85 seconds. Taps made during an animation are queued (never ignored; a double tap counts
   once), a queued tile lifts slightly, and queued moves run at double speed with no pause.
+- Pace again (15/10/2026): still too slow after two days' play, so all timings were halved (a match
+  is now about 0.45 seconds) and tiles respond on touch-down (`pointerdown`) instead of on release.
 
 ## Working with Kathryn
 - She is not a developer. Give plain-English, numbered, step-by-step instructions, and avoid jargon:

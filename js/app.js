@@ -6,7 +6,7 @@ import { sameGroup } from './rules.js';
 import { newGame, tapTile, freeIds, undoMove, canUndo, findHint, shuffleBoard, hammer, carryOn, carryOnCost, TRAY_SIZE } from './game.js';
 import { newProfile, recordResult, recordPlayDay, currentStreak, applyPrize, levelsToNextPrize, winRate, HELPS, HELP_NAMES } from './progress.js';
 
-const VERSION = '1.1.4';
+const VERSION = '1.1.5';
 const $ = id => document.getElementById(id);
 
 let profile = null;
@@ -187,7 +187,12 @@ function say(text) {
 
 // ---------- playing ----------
 
-$('board').addEventListener('click', e => {
+// React the moment a finger touches a tile (pointerdown), not when it lifts (click).
+// A click with no pointer behind it (e.g. from the keyboard) is still accepted.
+$('board').addEventListener('pointerdown', e => { if (e.isPrimary) tileTapped(e); });
+$('board').addEventListener('click', e => { if (e.detail === 0) tileTapped(e); });
+
+function tileTapped(e) {
   const el = e.target.closest('.tile');
   if (!el) return;
   const id = Number(el.dataset.id);
@@ -201,11 +206,11 @@ $('board').addEventListener('click', e => {
     return;
   }
   play(id, el);
-});
+}
 
 // Timings for a tile moving into the tray and a pair clearing (halved if the phone asks for less motion).
 const SLOW = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.5 : 1;
-const BASE = { fly: 200, rest: 120, together: 150, click: 70, clear: 170, close: 150 };
+const BASE = { fly: 100, rest: 60, together: 75, click: 35, clear: 85, close: 75 };
 let T = { ...BASE };
 /** Normal pace, or double speed with no pause when more taps are waiting. */
 function setPace() {
